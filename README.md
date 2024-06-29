@@ -18,7 +18,7 @@ CLIENT_ID=***
 ```
 - open this url to get code, Replace with your API_KEY:
 ```
-https://api.upstox.com/v2/login/authorization/dialog?client_id=" + API_KEY + "&redirect_uri=https://www.google.com
+https://api.upstox.com/v2/login/authorization/dialog?client_id=" + API_KEY + "&redirect_uri=https://www.google.com"
 ```
 
 - The code would be in the last part of the redirected link, copy paste the code below
