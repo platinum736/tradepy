@@ -1,10 +1,12 @@
 import requests
+from dotenv import load_dotenv
+load_dotenv()
 import os
 from order import Order
 
-API_KEY = "**"
-API_SECRET = "**"
-CLIENT_ID = '**'
+API_KEY = os.getenv("API_KEY")
+API_SECRET = os.getenv("API_SECRET")
+CLIENT_ID = os.getenv("CLIENT_ID")
 
 class Upstox():
     code = '***'
@@ -137,6 +139,98 @@ class Upstox():
         response = requests.request("POST", url, headers=headers, json=payload)
         if response.status_code == 200:
             self.orders.append(Order(response.json()['data']['order_id']))
+            return response.json()['data']
+        else:
+            return {'Error':response.status_code,
+                    'message':response.text}
+
+    def get_historical_data(self,instrument_token,interval,end_date,st_date=None):
+        if interval not in ['1minute','30minute', 'day', 'week', 'month']:
+            return {
+                "Error":"interval should be in ['1minute','30minute', 'day', 'week', 'month']"
+            }
+
+        url = "https://api.upstox.com/v2/historical-candle/" + instrument_token + '/' + interval + '/'
+        url = url + end_date
+        if st_date:
+            url = url + '/' + st_date
+
+
+        payload = {}
+        headers = {
+            'Accept': 'application/json',
+            'Authorization' : 'Bearer '+ self.__access_token
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        if response.status_code == 200:
+            return response.json()['data']
+        else:
+            return {'Error':response.status_code,
+                    'message':response.text}
+
+
+    def get_ltp(self,instrument_token):
+
+        url = "https://api.upstox.com/v2/market-quote/ltp"
+
+        payload = {
+            'instrument_key':instrument_token
+        }
+        headers = {
+            'Accept': 'application/json',
+            'Authorization' : 'Bearer '+ self.__access_token
+        }
+
+        response = requests.request("GET", url, headers=headers, params=payload)
+
+        if response.status_code == 200:
+            return response.json()['data']
+        else:
+            return {'Error':response.status_code,
+                    'message':response.text}
+
+
+    def get_intrday_ohlc(self,instrument_token,interval):
+        url = "https://api.upstox.com/v2/historical-candle/intraday/"
+        if interval not in ['1minute','30minute']:
+            return {
+                "Error":"interval should be in ['1minute','30minute']"
+            }
+        url = url + instrument_token + '/' + interval
+
+        headers = {
+            'Accept': 'application/json',
+            'Authorization' : 'Bearer '+ self.__access_token
+        }
+
+        response = requests.request("GET", url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()['data']
+        else:
+            return {'Error':response.status_code,
+                    'message':response.text}
+
+
+    def get_option_contracts(self,instrument_token,expiry_date):
+
+        url = "https://api.upstox.com/v2/option/contract"
+
+        payload = {
+            'instrument_key':instrument_token,
+            'expiry_date':expiry_date
+        }
+
+        headers = {
+            'Accept': 'application/json',
+            'Authorization' : 'Bearer '+ self.__access_token
+        }
+
+        response = requests.request("GET", url, headers=headers, params=payload)
+
+        if response.status_code == 200:
             return response.json()['data']
         else:
             return {'Error':response.status_code,
